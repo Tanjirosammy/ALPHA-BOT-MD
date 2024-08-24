@@ -1,62 +1,34 @@
-# Modern Whatsapp Bot - Alpha
+# Modern Whatsapp Bot with Image by Name Alpha
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Bot - Alpha</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        #bot-container {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
-        #message-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #send-button {
-            padding: 10px 15px;
-            background-color: #25D366;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+const { Client, MessageMedia } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+const fs = require('fs');
 
-<div id="bot-container">
-    <h1>WhatsApp Bot - Alpha</h1>
-    <input type="text" id="message-input" placeholder="Type your message here...">
-    <button id="send-button">Send</button>
-</div>
+// Initialize the client
+const client = new Client();
 
-<script>
-    const socket = io('https://your-server-url.com');
+// Generate QR code for authentication
+client.on('qr', (qr) => {
+    qrcode.generate(qr, { small: true });
+});
 
-    document.getElementById('send-button').addEventListener('click', function() {
-        const message = document.getElementById('message-input').value;
-        socket.emit('sendMessage', message);
-        document.getElementById('message-input').value = '';
-    });
+// On successful authentication
+client.on('ready', () => {
+    console.log('Client is ready!');
+});
 
-    socket.on('receiveMessage', function(message) {
-        console.log('New message:', message);
-    });
-</script>
+// Function to send an image by name
+const sendImageByName = (chatId, imageName) => {
+    const media = MessageMedia.fromFilePath(`./images/${imageName}`);
+    client.sendMessage(chatId, media);
+};
 
-</body>
-</html>
+// Example usage
+client.on('message', message => {
+    if (message.body === '!sendImage') {
+        sendImageByName(message.from, 'alpha_image.jpg');
+    }
+});
+
+// Start the client
+client.initialize();
